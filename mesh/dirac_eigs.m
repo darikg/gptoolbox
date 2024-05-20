@@ -21,20 +21,6 @@ function [eVec,eVal] = dirac_eigs(V,F,k,varargin)
   %   eVal  k by 1 list of eigenvalues
   %
 
-  function [eVal, eVec] = QuaternionEigs(mat, massMat, numEigs)
-    opts.issym = 1;
-    opts.isreal = 1;
-    opt.tol = 1e-7;
-    sigma = 1e-6;
-    [eVec, eVal] = eigs(mat + sigma.*speye(size(mat,1),size(mat,2)),...
-      massMat, numEigs*4, 'sm', opt);
-    [~ ,I] = sort(diag(abs(eVal))); % sort
-    eVal = sum(eVal,2);
-    eVal = eVal(I);
-    eVal = real(eVal) - sigma;
-    eVec = real(eVec(:,I));
-  end
-
   % default values
   relative = false;
   tao = 0.999999;
@@ -56,12 +42,6 @@ function [eVec,eVal] = dirac_eigs(V,F,k,varargin)
     v=v+1;
   end
     
-  if relative
-    D = relative_dirac_operator(V,F);
-  else
-    D = dirac_operator(V,F);
-  end
-
   % 1. Compute Relative Dirac operator
   if relative
     D = relative_dirac_operator(V,F);
@@ -145,4 +125,18 @@ function [eVec,eVal] = dirac_eigs(V,F,k,varargin)
   eVec = permute(cat(3, ...
   eVec(1:4:end,:),eVec(2:4:end,:),eVec(3:4:end,:),eVec(4:4:end,:)),[1 3 2]);
 
+end
+
+function [eVal, eVec] = QuaternionEigs(mat, massMat, numEigs)
+    opts.issym = 1;
+    opts.isreal = 1;
+    opt.tol = 1e-7;
+    sigma = 1e-6;
+    [eVec, eVal] = eigs(mat + sigma.*speye(size(mat,1),size(mat,2)),...
+      massMat, numEigs*4, 'sm', opt);
+    [~ ,I] = sort(diag(abs(eVal))); % sort
+    eVal = sum(eVal,2);
+    eVal = eVal(I);
+    eVal = real(eVal) - sigma;
+    eVec = real(eVec(:,I));
 end
